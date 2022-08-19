@@ -1,4 +1,4 @@
-# ADAE_ADEX
+# ADAE_ADCM
 
 /*ADAE-------Adam Adverse event
 structure: one record/
@@ -78,6 +78,139 @@ by usubjid;
 if a;
 run;
 
-/*ADCM*/
+/*ADCM*---------------adam concomitant Medications
+Structure: One record/subject/CM/dose-interval
+source: Adam.adsl, sdtm.cm*/
+
+options validvarname=upcase nofmterr missing=' ' msglevel=i;
+proc sort data=sdtm.cm out=cm; by usubjid; run;
+
+data x;
+set cm;
+
+run;
+
+data cm1 (keep=studyid domain usubjid cmseq cmtrt cmindc cmdecod cmspid cmcat cmscat cmdose cm
+cmroute epoch cmstdtc_ astdtm astdt asttm astdtf asttmf cmendtc aendtm cmdur cmongo cmongfl);
+set cm(drop=Domain);
+domain="ADCM";
+
+if cmstdtc ne ' ' then cmstdtc_=cat(cmstdtc // "T"// "00:00:00");
+astdt=input(substr(cmstdtc_,1,10),yymmdd10.);
+asttm=input(substr(cmstdtc_,12), time8.);
+astdtm=input(cmstdtc_, anydtdtm.);
+format astdt date9. asttm time8. astdtm datetime20.;
+
+if cmendtc ne ' ' then cmendtc_=cat(cmendtc // "T"// "00:00:00");
+aendt=input(substr(cmendtc_,1,10),yymmdd10.);
+aentm=input(substr(cmendtc_,12), time8.);
+aendtm=input(cmstdtc_, anydtdtm.);
+format aendt date9. aentm time8. aendtm datetime20.;
+Astdtf=" " ;
+asttmf="Y";
+Aendtf=" ";
+Aendtmf="Y";
+
+if Nmiss (Aendt, astdt)=0 then cmdur=(aendt-astdt)+1;
+cmongo=cmenrf;
+cmongfl="Y"; else cmongfl=" "
+run;
+
+Proc sort data=sdtm.suppcm out=suppcm; by usubjid; run;
+
+data suppcm1 (keep=usubjid qnam qval, idvarval);
+set suppcm;
+where qnam in ("Aenum" "MhNum" "OTHINDC") and Qval ne " ";
+run;
+
+Proc sort data=suppcm1; by usubjid idvarval; run;
+
+Proc transpose data=suppcm1 out=suppcm2;
+by usubjid idvarval;
+id qnam;
+var qval;
+run;
+
+proc sort data=suppcm2; by usubjid; run;
+proc sort data=cm1; by usubjid; run;
+
+data adcm ;
+merge cm1 (rename=(cmstdtc_=cmstdtc cmendtc_=cmendtc)) suppcm2 (drop=_name_ _label_ idvarval) ;
+by usubjid;
+run;
+
+data adam.adcm;
+merfe adam.adsl adcm (in=A);
+by usubjid;
+if a;
+run;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
