@@ -147,7 +147,34 @@ run;
 
 
 /*ADEX---------ADAM EXPOSURE*/
-Source: Adam
+Source: Adam.adsl, sdtm.ex, sdtm.suppex*/
+
+options validvarname=upcase nofmterr missing=' ' msglevel=i;
+
+Proc sort data=sdtm.ex out=ex; by usubjid; run;
+
+Data x;
+set ex;
+if exstdtc ne ' ' and length (exstdtc) ge 16 then exstdtc_=Exstdtc;
+else if exstdtc ne ' ' and length(exstdtc) ne 16 then exstdtc=Cat(exstdtc//"T"//"00.00");
+run;
+
+data ex1 (keep=studyid domain usubjid exseq exgrpid extrt excat exscat
+epoch exstdtc exendtc exstdy exendy astdtm astdt asttm
+aentmf);
+set ex (drop=domain);
+domain="ADEX";
+exstdt=input(substr(exstdtc, 1, 10), YYMMDD10.);
+if length(exstdtc) ge 16 then 
+exstm=input(substr(exstdtc, 12), time8.);
+else if length (exstdtc) lt 16 then exstm=input("00:00", time8
+if exstdtc ne' ' and length(exstdtc) ge 16 then exstdtc_=exstdtc;
+else if exstdtc Ne ' ' and length(exstdtc) Ne 16 then exstdtc_=CAT(Exstdtc //"T"//"00.00");
+ASTDTM=input (exstdtc, yymmdd10.);
+ASTDT=input(exstdtc, yymmdd10.);
+asttm=input(exstdtc, yymmdd10.);
+astdtf=" ";
+asttmf=" ";
 
 
 
