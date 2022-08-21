@@ -153,10 +153,10 @@ options validvarname=upcase nofmterr missing=' ' msglevel=i;
 
 Proc sort data=sdtm.ex out=ex; by usubjid; run;
 
-Data x;
+Data x (keep=exstdtc exstdtc_);
 set ex;
-if exstdtc ne ' ' and length (exstdtc) ge 16 then exstdtc_=Exstdtc;
-else if exstdtc ne ' ' and length(exstdtc) ne 16 then exstdtc=Cat(exstdtc//"T"//"00.00");
+if length (exstdtc) ge 16 then exstdtc_=Exstdtc;
+else if length(exstdtc) lt 16 then exstdtc=Cat(exstdtc//"T"//"00.00");
 run;
 
 data ex1 (keep=studyid domain usubjid exseq exgrpid extrt excat exscat
@@ -175,6 +175,23 @@ ASTDT=input(exstdtc, yymmdd10.);
 asttm=input(exstdtc, yymmdd10.);
 astdtf=" ";
 asttmf=" ";
+if length (exendtc)=10 then do; 
+exendtc_=compress(CAT(Exendtc//"T"//"00:00"));
+aentmf="Y";
+end;
+else do;
+exendtc_=exendtc;
+                 aentm=" ";
+                 if exendtc_ Ne ' 'then
+AENDTM=input(substr (exendtc_,1,10), yymmdd10.);;
+Aendt=input(substr (exendtc, 12), time8.);
+Aentm=input(exendtc_, Anydtdtm.);
+aendtf=" ";
+aentmf=" ";
+format astdtm aendtm datetime20.
+              astdt aendt date9.
+              asttm aentm time5.;
+run;
 
 
 
